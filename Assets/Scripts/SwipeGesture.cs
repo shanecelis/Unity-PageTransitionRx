@@ -59,6 +59,7 @@ public class SwipeGesture : MonoBehaviour
       .Where(eventData => eventData.pointerDrag.gameObject == this.gameObject )
       .Select(eventData => eventData.delta);
 
+    // XXX: This can timeout.
     onEndDragObservable = eventTrigger
       .OnEndDragAsObservable()
       .TakeUntilDisable(this)

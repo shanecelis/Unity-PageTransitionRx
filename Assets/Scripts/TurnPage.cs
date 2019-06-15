@@ -6,8 +6,7 @@ using UniRx.Triggers;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(SwipeGesture), typeof(HorizontalLayoutGroup))]
-public class TurnPage : MonoBehaviour
-{
+public class TurnPage : MonoBehaviour {
   public float PageWidth = 1080;
 
   private RectTransform rectTransform;
@@ -18,8 +17,7 @@ public class TurnPage : MonoBehaviour
   private Vector2 anchorBeginPosition;
   private Vector2 pageWidthVector;
 
-  void Awake()
-  {
+  void Awake() {
     DOTween.Init();
     DOTween.defaultAutoPlay = AutoPlay.None; // Tween 생성시 자동 실행시키지
     pageWidthVector = new Vector2(-PageWidth, 0f);
@@ -28,8 +26,7 @@ public class TurnPage : MonoBehaviour
     anchorBeginPosition = rectTransform.anchoredPosition;
   }
 
-  void OnEnable()
-  {
+  void OnEnable() {
     pageCount = transform.childCount;
     swipeGesture
       .OnDragRelative
