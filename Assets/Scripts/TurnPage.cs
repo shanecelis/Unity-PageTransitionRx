@@ -28,9 +28,10 @@ public class TurnPage : MonoBehaviour {
 
   void OnEnable() {
     pageCount = transform.childCount;
+
     swipeGesture
       .OnDragRelative
-      .Where(_ => this.moveAnimation == null || ! this.moveAnimation.IsPlaying ()) // 애니메이션 실행 중이 아니
+      .Where(_ => this.moveAnimation == null || ! this.moveAnimation.IsPlaying()) // 애니메이션 실행 중이 아니
       .Subscribe(delta =>
           {
             rectTransform.anchoredPosition += delta;
