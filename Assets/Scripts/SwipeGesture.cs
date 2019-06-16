@@ -5,8 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(ObservableEventTrigger))]
-public class SwipeGesture : MonoBehaviour
-{
+public class SwipeGesture : MonoBehaviour {
   // public float TotalSeconds = 1.0f;
   public float ThresholdSeconds = 1.0f;
   public float ThresholdDistance = 100.0f;
@@ -23,14 +22,14 @@ public class SwipeGesture : MonoBehaviour
 
   private IObservable<PointerEventData> onEndDragObservable;
 
-  public IObservable<PointerEventData> OnSwipeWhere(Func<MoveDirection, bool> predicate) {
-    return onEndDragObservable
-      .Where(eventData => predicate(SwipeDirection(eventData)));
-  }
-
   public IObservable<MoveDirection> OnSwipe() {
     return onEndDragObservable
       .Select(eventData => SwipeDirection(eventData));
+  }
+
+  public IObservable<PointerEventData> OnSwipeWhere(Func<MoveDirection, bool> predicate) {
+    return onEndDragObservable
+      .Where(eventData => predicate(SwipeDirection(eventData)));
   }
 
   public IObservable<PointerEventData> OnSwipe(MoveDirection direction) {
@@ -42,28 +41,26 @@ public class SwipeGesture : MonoBehaviour
   }
 
   void OnEnable() {
+    // XXX: Consider switching to Observable{Begin,,End}DragTrigger.
     eventTrigger
-     .OnBeginDragAsObservable ()
-     .TakeUntilDisable(this)
-     .Where(eventData => eventData.pointerDrag.gameObject == this.gameObject)
-     .Select(eventData => eventData.position)
-     .Subscribe(position =>
-          {
-            this.beginPosition =  position ;
-            this.beginTime  =  DateTime.Now ;
-          });
+      .OnBeginDragAsObservable()
+      .TakeUntilDisable(this)
+      .Where(eventData => eventData.pointerDrag.gameObject == this.gameObject)
+      .Select(eventData => eventData.position)
+      .Subscribe(position => {
+          this.beginPosition = position;
+          this.beginTime = DateTime.Now;
+        });
 
     OnDragRelative = eventTrigger
-      .OnDragAsObservable ()
+      .OnDragAsObservable()
       .TakeUntilDisable(this)
       .Where(eventData => eventData.pointerDrag.gameObject == this.gameObject )
       .Select(eventData => eventData.delta);
 
-    // XXX: This can timeout.
     onEndDragObservable = eventTrigger
       .OnEndDragAsObservable()
-      .TakeUntilDisable(this)
-      .Where(eventData => (DateTime.Now - this.beginTime).TotalSeconds < this.ThresholdSeconds);
+      .TakeUntilDisable(this);
 
     OnSwipeLeft = OnSwipe(MoveDirection.Left);
 
@@ -76,6 +73,10 @@ public class SwipeGesture : MonoBehaviour
   }
 
   protected MoveDirection SwipeDirection(PointerEventData eventData) {
+    // Timeout.
+    if ((DateTime.Now - this.beginTime).TotalSeconds > this.ThresholdSeconds)
+      return MoveDirection.None;
+
     var delta_x = eventData.position.x - beginPosition.x;
     var delta_y = eventData.position.y - beginPosition.y;
     if (Mathf.Max(Mathf.Abs(delta_x), Mathf.Abs(delta_y)) >= this.ThresholdDistance) {
@@ -90,11 +91,3 @@ public class SwipeGesture : MonoBehaviour
     }
   }
 }
-
-// public static class SwipeGestureExtensions {
-
-//   public static IObservable<MoveDirection> OnSwipe(IObservable<PointerEventData> eventData);
-//   public static IObservable<PointerEventData> OnSwipe(IObservable<PointerEventData> eventData, MoveDirection moveDirection);
-//   // public static IObservable<PointerEventData> OnSwipe(IObservable<PointerEventData> eventData, Predicate<MoveDirection> movePredicate);
-//   public static IObservable<PointerEventData> OnSwipeWhere(IObservable<PointerEventData> eventData, Predicate<MoveDirection> movePredicate);
-// }
